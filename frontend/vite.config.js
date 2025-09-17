@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export default defineConfig({
+  appType:'spa',
+  root:'public',
   plugins: [react()],
   base: '/animaciongnomitosmetrics/',
   build:{
