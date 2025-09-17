@@ -12,7 +12,7 @@ export default defineConfig({
     port: 5173,      // Puerto del frontend (opcional, Vite usa 5173 por defecto)
     proxy: {
       '/api': {
-        target: 'https://animaciongnomitosmetrics.onrender.com/api/v1/analytics', // Tu backend
+        target: 'https://animaciongnomitosmetrics.onrender.com', // Tu backend
         changeOrigin: true,              // Importante para que funcione bien
         secure: false,                   // Para desarrollo (no requiere HTTPS)
         rewrite: path => path.replace(/^\/api/, '/api') // Opcional, pero recomendado
