@@ -85,21 +85,21 @@ export default function CodeSection({
   const updateLineCount = (txt) => setLineCount(txt.split("\n").length);
 
   const copyToClipboard = async () => {
-    console.log(`📋 Iniciando copia para: ${title} (textareaId: ${textareaId})`);
+    // 🔇 LOG REMOVIDO: console.log(`📋 Iniciando copia para: ${title} (textareaId: ${textareaId})`);
     setCopyStatus("copying");
     
     try {
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(codeContent);
-        console.log('✅ Copia exitosa con navigator.clipboard');
+        // 🔇 LOG REMOVIDO: console.log('✅ Copia exitosa con navigator.clipboard');
         setCopyStatus("success");
-        console.log('🔄 Llamando onCopy...');
+        // 🔇 LOG REMOVIDO: console.log('🔄 Llamando onCopy...');
         onCopy(); // Llama a onCopy (será handleCopy para textarea 2 y 3)
         setTimeout(() => setCopyStatus("idle"), 2000);
         return;
       }
       
-      console.log('⚠️ navigator.clipboard no disponible, intentando execCommand...');
+      // 🔇 LOG REMOVIDO: console.log('⚠️ navigator.clipboard no disponible, intentando execCommand...');
       const textArea = document.createElement("textarea");
       textArea.value = codeContent;
       textArea.style.position = "fixed";
@@ -114,9 +114,9 @@ export default function CodeSection({
       document.body.removeChild(textArea);
       
       if (successful) {
-        console.log('✅ Copia exitosa con execCommand');
+        // 🔇 LOG REMOVIDO: console.log('✅ Copia exitosa con execCommand');
         setCopyStatus("success");
-        console.log('🔄 Llamando onCopy...');
+        // 🔇 LOG REMOVIDO: console.log('🔄 Llamando onCopy...');
         onCopy(); // Llama a onCopy
         setTimeout(() => setCopyStatus("idle"), 2000);
       } else {
@@ -124,20 +124,20 @@ export default function CodeSection({
       }
       
     } catch (error) {
-      console.error("❌ Copy failed:", error.message);
+      // 🔇 LOG REMOVIDO: console.error("❌ Copy failed:", error.message);
       setCopyStatus("error");
       
       if (textareaRef.current) {
         try {
-          console.log('⚠️ Intentando copia fallback con textareaRef...');
+          // 🔇 LOG REMOVIDO: console.log('⚠️ Intentando copia fallback con textareaRef...');
           textareaRef.current.select();
           document.execCommand('copy');
-          console.log('✅ Copia fallback exitosa');
+          // 🔇 LOG REMOVIDO: console.log('✅ Copia fallback exitosa');
           setCopyStatus("success");
-          console.log('🔄 Llamando onCopy en fallback...');
+          // 🔇 LOG REMOVIDO: console.log('🔄 Llamando onCopy en fallback...');
           onCopy(); // Llama a onCopy
         } catch (fallbackError) {
-          console.error("❌ All copy methods failed:", fallbackError.message);
+          // 🔇 LOG REMOVIDO: console.error("❌ All copy methods failed:", fallbackError.message);
           alert(
             "No se pudo copiar automáticamente. Por favor:\n" +
             "1. Selecciona todo el texto manualmente (Ctrl+A)\n" +
@@ -204,7 +204,8 @@ export default function CodeSection({
         setIsLoading(false);
         return;
       } catch (error) {
-        console.error(`Error loading from ${gateway}:`, error);
+        // 🔇 LOG MINIMIZADO: Solo error crítico sin detalles
+        console.error(`Gateway failed: ${gateway.split('/')[2]}`);
         continue;
       }
     }
