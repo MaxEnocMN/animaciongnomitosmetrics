@@ -1,0 +1,16 @@
+frontend/src/App.jsx
+frontend/src/components/CodeSection.jsx
+frontend/src/components/Footer.jsx
+frontend/src/components/Gallery.jsx
+frontend/src/components/Header.jsx
+frontend/src/components/ImageSection.jsx
+frontend/src/components/Modal.jsx
+frontend/src/main.jsx
+frontend/src/App.jsx
+frontend/src/components/CodeSection.jsx
+frontend/src/components/Footer.jsx
+frontend/src/components/Gallery.jsx
+frontend/src/components/Header.jsx
+frontend/src/components/ImageSection.jsx
+frontend/src/components/Modal.jsx
+frontend/src/main.jsx
