@@ -18,17 +18,11 @@ app.use(morgan('combined'));
 // 👇 CORS MANUAL - SOLUCIÓN GARANTIZADA PARA DESARROLLO
 app.use((req, res, next) => {
   // Permitir frontend en tu IP local
-  const allowedOrigins = [
-    'http://localhost:5173',
-    'http://192.168.1.4:5173',
-    'http://127.0.0.1:5173'
-  ];
-  
+  const allowedOrigins = ['https://maxenocmn.github.io'];
   const origin = req.headers.origin;
+
   if (allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
-  } else {
-    res.header('Access-Control-Allow-Origin', 'http://192.168.1.4:5173'); // fallback
   }
 
   // Headers obligatorios para CORS
