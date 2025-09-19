@@ -26,19 +26,37 @@ document.body.style.padding = '0';
   `.trim(),
 };
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+// 🔐 Función para ofuscar logs sensibles
+const logSafely = (message, data = null) => {
+  // COMPLETAMENTE DESHABILITADO para máxima seguridad
+  // Si quieres debug, cambia false por import.meta.env.MODE === 'development'
+  if (false) {
+    if (data) {
+      console.log(message, data);
+    } else {
+      console.log(message);
+    }
+  }
+};
+
 function App() {
   // Estado para almacenar el país del usuario
   const [userCountry, setUserCountry] = useState('Unknown');
+  
+  // 🛡️ NUEVO: Estado para rastrear qué textareas ya fueron copiadas (anti-spam)
+  const [copiedTextareas, setCopiedTextareas] = useState(new Set());
 
   // Obtener el país del usuario al cargar la aplicación
   useEffect(() => {
     const fetchCountry = async () => {
-      console.log('🌍 Iniciando solicitud de geolocalización...');
+      logSafely('🌍 Iniciando solicitud de geolocalización...');
       try {
         const response = await fetch('http://ip-api.com/json');
         const data = await response.json();
         if (data.status === 'success') {
-          console.log('✅ País obtenido:', data.country);
+          logSafely('✅ País obtenido:', data.country);
           setUserCountry(data.country || 'Unknown');
         } else {
           console.error('❌ Error al obtener el país:', data.message);
@@ -53,9 +71,16 @@ function App() {
     fetchCountry();
   }, []); // Se ejecuta solo al montar el componente
 
-  // Función handleCopy con logs para depuración
+  // Función handleCopy con logs para depuración + validación anti-spam
   const handleCopy = async (textareaId) => {
-    console.log(`🔥 Iniciando handleCopy para textarea: ${textareaId}, país: ${userCountry}`);
+    logSafely(`🔥 Iniciando handleCopy para textarea: ${textareaId}, país: ${userCountry}`);
+    
+    // 🛡️ NUEVO: Verificar si ya se copió esta textarea en esta sesión
+    if (copiedTextareas.has(textareaId)) {
+      logSafely(`⚠️ Textarea ${textareaId} ya fue copiada anteriormente, saltando registro`);
+      return; // Salir sin registrar en Firebase
+    }
+
     try {
       const payload = {
         type: 'code_copy',
@@ -63,21 +88,28 @@ function App() {
         country: userCountry,
         extra: { textarea: textareaId },
       };
-      console.log('📤 Enviando payload al backend:', payload);
+      
+      logSafely('📤 Enviando evento...', { textareaId }); // Sin mostrar URL ni payload completo
 
-      const res = await fetch('/api/v1/analytics', {
+      const res = await fetch(`${API_BASE_URL}/analytics`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        mode: 'cors', // Asegura que la solicitud maneje CORS
+        mode: 'cors',
       });
 
-      console.log('📥 Respuesta del backend, status:', res.status);
+      logSafely('📥 Respuesta recibida, status:', res.status);
+      
       const data = await res.json();
-      console.log('✅ Evento registrado en Firebase:', data);
+      
+      logSafely('✅ Evento registrado exitosamente');
+      
+      // 🛡️ NUEVO: Marcar esta textarea como ya copiada
+      setCopiedTextareas(prev => new Set([...prev, textareaId]));
+      
     } catch (err) {
-      console.error('❌ Error al registrar evento en el backend:', err.message);
-      console.error('Detalles del error:', err);
+      logSafely('❌ Error al registrar evento:', err.message);
+      // En producción, falla silenciosamente sin revelar información
     }
   };
 
@@ -102,7 +134,7 @@ function App() {
         messageId="msg-dark-theme"
         textareaId="ta-dark-theme"
         onCopy={() => {
-          console.log('🖥️ Copia en textarea 1 (ta-dark-theme) - Sin acción');
+          logSafely('🖥️ Copia en textarea 1 (ta-dark-theme) - Sin acción');
         }} // Log para confirmar, pero sin acción
       />
       <h2 className="section-header">Enjoy the Animation - Part 1</h2>
@@ -112,7 +144,7 @@ function App() {
         messageId="msg-game1"
         textareaId="ta-game1"
         onCopy={() => {
-          console.log('🖥️ Llamando onCopy para textarea 2 (ta-game1)');
+          logSafely('🖥️ Llamando onCopy para textarea 2 (ta-game1)');
           handleCopy(2);
         }}
       />
@@ -123,7 +155,7 @@ function App() {
         messageId="msg-game2"
         textareaId="ta-game2"
         onCopy={() => {
-          console.log('🖥️ Llamando onCopy para textarea 3 (ta-game2)');
+          logSafely('🖥️ Llamando onCopy para textarea 3 (ta-game2)');
           handleCopy(3);
         }}
       />
