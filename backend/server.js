@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
@@ -12,6 +13,13 @@ const PORT = process.env.PORT || 3000;
 
 app.use(helmet());
 app.use(morgan('combined'));
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // máximo 100 requests por IP
+  message: { error: 'Demasiadas solicitudes, intenta más tarde' }
+});
+
+app.use('/api/', limiter);
 
 app.use((req, res, next) => {
   const allowedOrigins = ['https://maxenocmn.github.io'];
