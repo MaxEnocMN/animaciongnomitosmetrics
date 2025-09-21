@@ -13,10 +13,17 @@ const PORT = process.env.PORT || 3000;
 
 app.use(helmet());
 app.use(morgan('combined'));
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // máximo 100 requests por IP
+  max: 10, // máximo 10 requests por IP
   message: { error: 'Demasiadas solicitudes, intenta más tarde' }
+});
+
+const analyticsLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minuto
+  max: 1, // máximo 1 request por minuto
+  message: { error: 'Solo se permite 1 evento por minuto' }
 });
 
 app.use('/api/', limiter);
@@ -89,7 +96,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.post('/api/v1/analytics', validateAnalyticsData, async (req, res) => {
+app.post('/api/v1/analytics', analyticsLimiter, validateAnalyticsData, async (req, res) => {
   try {
     const { type, sessionId, country, extra = {} } = req.body;
     
