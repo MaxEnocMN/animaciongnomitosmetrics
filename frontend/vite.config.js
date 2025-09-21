@@ -6,16 +6,16 @@ dotenv.config();
 
 export default defineConfig({
   plugins: [react()],
-  base: '/animaciongnomitos/',
+  base: '/animaciongnomitosmetrics/', // Corregido
   server: {
-    host: '0.0.0.0', // Permite acceder desde tu IP local (192.168.1.4, etc.)
-    port: 5173,      // Puerto del frontend (opcional, Vite usa 5173 por defecto)
+    host: '0.0.0.0',
+    port: 5173,
     proxy: {
       '/api': {
-        target: 'https://animaciongnomitosmetrics.onrender.com', // Tu backend
-        changeOrigin: true,              // Importante para que funcione bien
-        secure: false,                   // Para desarrollo (no requiere HTTPS)
-        rewrite: path => path.replace(/^\/api/, '/api') // Opcional, pero recomendado
+        target: 'https://animaciongnomitosmetrics.onrender.com',
+        changeOrigin: true,
+        secure: false,
+        rewrite: path => path.replace(/^\/api/, '/api')
       }
     }
   },
@@ -28,4 +28,8 @@ export default defineConfig({
     'import.meta.env.VITE_FIREBASE_APP_ID': JSON.stringify(process.env.VITE_FIREBASE_APP_ID),
     'import.meta.env.VITE_BACKEND_URL': JSON.stringify(process.env.VITE_BACKEND_URL),
   },
+  build: {
+    outDir: 'dist',
+  },
+  publicDir: 'public',
 });
