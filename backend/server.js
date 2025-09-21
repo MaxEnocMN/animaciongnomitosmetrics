@@ -5,45 +5,36 @@ import dotenv from 'dotenv';
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
-// Cargar variables de entorno
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares de seguridad y logs
 app.use(helmet());
 app.use(morgan('combined'));
 
-// 👇 CORS MANUAL - SOLUCIÓN GARANTIZADA PARA DESARROLLO
 app.use((req, res, next) => {
-  // Permitir frontend en tu IP local
   const allowedOrigins = ['https://maxenocmn.github.io'];
+  
   const origin = req.headers.origin;
-
   if (allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
   }
 
-  // Headers obligatorios para CORS
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
-  res.header('Access-Control-Max-Age', '86400'); // 24h cache preflight
+  res.header('Access-Control-Max-Age', '86400');
 
-  // Responder inmediatamente a OPTIONS (preflight)
   if (req.method === 'OPTIONS') {
-    console.log(`✅ [CORS] Respondiendo a OPTIONS desde ${origin || 'sin origen'}`);
     return res.status(204).end();
   }
 
   next();
 });
 
-// Parsear cuerpo de las peticiones
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Configuración de Firebase Admin
 const serviceAccount = {
   type: "service_account",
   project_id: process.env.FIREBASE_PROJECT_ID,
@@ -57,7 +48,6 @@ const serviceAccount = {
   client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
 };
 
-// Inicializar Firebase Admin
 let db;
 try {
   const firebaseApp = initializeApp({
@@ -65,18 +55,15 @@ try {
     projectId: process.env.FIREBASE_PROJECT_ID
   });
   db = getFirestore(firebaseApp);
-  console.log('✅ Firebase Admin inicializado correctamente');
 } catch (error) {
-  console.error('❌ Error inicializando Firebase Admin:', error);
+  console.error('Error inicializando Firebase Admin:', error);
   process.exit(1);
 }
 
-// Middleware para validar datos requeridos
 const validateAnalyticsData = (req, res, next) => {
   const { type, sessionId, country } = req.body;
   
   if (!type || !sessionId || !country) {
-    console.log('⚠ Validación fallida:', { type, sessionId, country });
     return res.status(400).json({
       error: 'Faltan campos requeridos: type, sessionId, country'
     });
@@ -85,11 +72,7 @@ const validateAnalyticsData = (req, res, next) => {
   next();
 };
 
-// Rutas de la API
-
-// Health check
 app.get('/health', (req, res) => {
-  console.log('📡 Recibida solicitud GET /health');
   res.json({
     status: 'OK',
     timestamp: new Date().toISOString(),
@@ -98,12 +81,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Endpoint para registrar eventos de analytics
 app.post('/api/v1/analytics', validateAnalyticsData, async (req, res) => {
   try {
     const { type, sessionId, country, extra = {} } = req.body;
-    
-    console.log('📥 Recibida solicitud POST /api/v1/analytics:', { type, sessionId, country, extra });
     
     const analyticsData = {
       timestamp: new Date(),
@@ -116,8 +96,6 @@ app.post('/api/v1/analytics', validateAnalyticsData, async (req, res) => {
     
     const docRef = await db.collection('analytics').add(analyticsData);
     
-    console.log(`📊 Evento registrado: ${type} - ID: ${docRef.id}`);
-    
     res.status(201).json({
       success: true,
       message: 'Evento registrado correctamente',
@@ -126,7 +104,7 @@ app.post('/api/v1/analytics', validateAnalyticsData, async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Error registrando evento:', error);
+    console.error('Error registrando evento:', error);
     res.status(500).json({
       error: 'Error interno del servidor',
       message: 'No se pudo registrar el evento'
@@ -134,12 +112,9 @@ app.post('/api/v1/analytics', validateAnalyticsData, async (req, res) => {
   }
 });
 
-// Endpoint para obtener métricas
 app.get('/api/v1/analytics/stats', async (req, res) => {
   try {
     const { limit = 100, type } = req.query;
-    
-    console.log('📡 Recibida solicitud GET /api/v1/analytics/stats:', { limit, type });
     
     let query = db.collection('analytics').orderBy('timestamp', 'desc');
     
@@ -167,7 +142,7 @@ app.get('/api/v1/analytics/stats', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Error obteniendo estadísticas:', error);
+    console.error('Error obteniendo estadísticas:', error);
     res.status(500).json({
       error: 'Error interno del servidor',
       message: 'No se pudieron obtener las estadísticas'
@@ -175,11 +150,8 @@ app.get('/api/v1/analytics/stats', async (req, res) => {
   }
 });
 
-// Endpoint para obtener resumen
 app.get('/api/v1/analytics/summary', async (req, res) => {
   try {
-    console.log('📡 Recibida solicitud GET /api/v1/analytics/summary');
-    
     const snapshot = await db.collection('analytics').get();
     
     const summary = {
@@ -218,7 +190,7 @@ app.get('/api/v1/analytics/summary', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Error obteniendo resumen:', error);
+    console.error('Error obteniendo resumen:', error);
     res.status(500).json({
       error: 'Error interno del servidor',
       message: 'No se pudo obtener el resumen'
@@ -226,27 +198,21 @@ app.get('/api/v1/analytics/summary', async (req, res) => {
   }
 });
 
-// Manejo de rutas no encontradas
 app.use('*', (req, res) => {
-  console.log('⚠ Ruta no encontrada:', req.originalUrl);
   res.status(404).json({
     error: 'Ruta no encontrada',
     message: 'La ruta solicitada no existe'
   });
 });
 
-// Manejo de errores globales
 app.use((error, req, res, next) => {
-  console.error('❌ Error no manejado:', error);
+  console.error('Error no manejado:', error);
   res.status(500).json({
     error: 'Error interno del servidor',
     message: 'Algo salió mal'
   });
 });
 
-// Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-  console.log(`🌐 Frontend URL esperado: http://192.168.1.4:5173`);
-  console.log(`📊 API Base: http://localhost:${PORT}/api/v1`);
+  console.log(`Servidor corriendo en puerto ${PORT}`);
 });
