@@ -53,7 +53,7 @@ function App() {
     const fetchCountry = async () => {
       logSafely('🌍 Iniciando solicitud de geolocalización...');
       try {
-        const response = await fetch('http://ip-api.com/json');
+        const response = await fetch('https://ipapi.co/json/');
         const data = await response.json();
         if (data.status === 'success') {
           logSafely('✅ País obtenido:', data.country);
