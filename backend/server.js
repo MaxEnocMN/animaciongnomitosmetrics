@@ -6,6 +6,16 @@ import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import rateLimit from 'express-rate-limit';
 
+async function getCountryFromIP(ip) {
+  try {
+    const response = await fetch(`https://ipapi.co/${ip}/json/`);
+    const data = await response.json();
+    return data.country_name || data.country_code || "Unknown";
+  } catch {
+    return "Unknown";
+  }
+}
+
 dotenv.config();
 
 const app = express();
@@ -99,10 +109,12 @@ app.get('/health', (req, res) => {
 app.post('/api/v1/analytics', analyticsLimiter, validateAnalyticsData, async (req, res) => {
   try {
     const { type, sessionId, country, extra = {} } = req.body;
+    const clientIP = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+    const detectedCountry = await getCountryFromIP(clientIP);
     
     const analyticsData = {
       timestamp: new Date(),
-      country: country,
+      country: detectedCountry,
       sessionId: sessionId,
       type: type,
       page: 'MEMN_blog',
