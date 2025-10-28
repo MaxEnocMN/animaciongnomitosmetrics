@@ -174,7 +174,6 @@ export default function CodeSection({
     }
 
     const gateways = [
-      `https://cloudflare-ipfs.com/ipfs/${hash}`,
       `https://ipfs.io/ipfs/${hash}`,
       `https://gateway.pinata.cloud/ipfs/${hash}`,
       `https://${hash}.ipfs.dweb.link/`,
