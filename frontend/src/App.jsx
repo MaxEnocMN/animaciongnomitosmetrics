@@ -85,7 +85,6 @@ function App() {
       const payload = {
         type: 'code_copy',
         sessionId: 'session-' + Date.now(),
-        country: userCountry,
         extra: { textarea: textareaId },
       };
       
